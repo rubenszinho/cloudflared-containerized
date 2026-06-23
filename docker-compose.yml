@@ -1,0 +1,15 @@
+# Cloudflare Tunnel connector — one container, declarative. Run: docker compose up -d
+# Per-box config in .env (TUNNEL_TOKEN, CONNECTOR_NAME). Never commit .env.
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: ${CONNECTOR_NAME:-cloudflared}
+    command: tunnel --no-autoupdate run        # reads TUNNEL_TOKEN from env
+    env_file: [.env]
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"    # ssh://host.docker.internal:22 -> host sshd
+    networks: [shared]
+networks:
+  shared:
+    external: true                             # docker network create shared  (once per host)
