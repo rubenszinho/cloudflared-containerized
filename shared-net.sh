@@ -5,7 +5,10 @@
 #   override network name: SHARED_NET=othernet ./shared-net.sh
 set -uo pipefail
 cd "$(dirname "$0")"
-NET="${SHARED_NET:-shared}"
+# network name: explicit SHARED_NET env wins, else SHARED_NET from .env, else `shared`
+NET="${SHARED_NET:-}"
+[ -z "$NET" ] && [ -f .env ] && NET="$(grep -E '^SHARED_NET=' .env 2>/dev/null | cut -d= -f2- | tr -d '"' || true)"
+NET="${NET:-shared}"
 
 command -v docker >/dev/null 2>&1 || { echo "docker not found"; exit 1; }
 if ! docker network inspect "$NET" >/dev/null 2>&1; then

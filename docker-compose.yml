@@ -12,4 +12,4 @@ services:
     networks: [shared]
 networks:
   shared:
-    external: true                             # docker network create shared  (once per host)
+    name: ${SHARED_NET:-shared}                # compose creates & owns this network; override via SHARED_NET in .env
