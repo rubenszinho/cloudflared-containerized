@@ -12,4 +12,5 @@ services:
     networks: [shared]
 networks:
   shared:
-    name: ${SHARED_NET:-shared}                # compose creates & owns this network; override via SHARED_NET in .env
+    external: true                             # join an existing network (your boxes already have `shared`)
+    name: ${SHARED_NET:-shared}                # network name; override via SHARED_NET in .env (default: shared)

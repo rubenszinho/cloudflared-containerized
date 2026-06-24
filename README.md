@@ -10,8 +10,10 @@ Run the official `cloudflared` as a single container that exposes your services 
 ## Setup
 ```bash
 cp env.example .env             # set TUNNEL_TOKEN + CONNECTOR_NAME (+ optional SHARED_NET)
-docker compose up -d            # creates the `shared` network AND the connector
+make up                         # creates `shared` if missing, then starts the connector
 ```
+Other targets: `make logs`, `make net` (attach/detach TUI), `make ps`, `make down`.
+
 - `TUNNEL_TOKEN` — connector token (dashboard → configure, or `cloudflared tunnel token <id>`).
 - `CONNECTOR_NAME` — `cloudflared-<host-id>`.
 
@@ -41,10 +43,5 @@ One-off without the TUI: `docker network connect shared <container>`.
 Run this folder on a second host with the same `TUNNEL_TOKEN`. Cloudflare routes to the nearest replica (failover; no load-balancing).
 
 ## Notes
-- The connector **owns** the `shared` network (compose creates it). The network persists across reboots — you only ever run `docker compose up -d`.
-- App stacks join it as **external** in their own compose so they auto-attach and survive reboots:
-  ```yaml
-  networks: { shared: { external: true } }
-  ```
-  (or ad-hoc via `./shared-net.sh`). On a brand-new host, start the connector **before** app stacks that declare the external network.
-- If a `shared` network already exists from a previous manual setup, compose refuses it ("network found but has incorrect label"). Remove it once (`docker network rm shared` after detaching its containers) or set a different `SHARED_NET` for that box.
+- The `shared` network is **external** — the connector joins it, doesn't own it. It lives independently of any stack, so reboots and start-order don't matter. If a host doesn't have it yet: `docker network create shared` (once).
+- App containers reach the tunnel by being on `shared`: declare it in their own compose (`networks: { shared: { external: true } }`) so they auto-attach, or attach ad-hoc with `./shared-net.sh`.
